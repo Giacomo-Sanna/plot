@@ -1,0 +1,21 @@
+[package]
+name = "plot_graph"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+minifb = "0.23.0"
+chrono = "0.4.23"
+plotters = "0.3.1"
+
+#[dependencies.plotters]
+#git = "https://github.com/plotters-rs/plotters"
+#default_features = false
+#features = ["ttf"]
+
+[dependencies.plotters-bitmap]
+default_features = false
+git = "https://github.com/plotters-rs/plotters"
+
