@@ -54,24 +54,11 @@ pub fn run(v: Vec<f32>, file_name: &str) {
     println!("Plot has been saved to {}", &filepath);
 }
 
-fn parse_data(v: Vec<f32>) -> Vec<(usize, f32, f32, f32, f32)> {
+pub fn parse_data(v: Vec<f32>) -> Vec<(usize, f32, f32, f32, f32)> {
     v.iter()
         .zip(v.iter().skip(1))
         .enumerate()
         // (x, open, high, low, close)
         .map(|(i, x)| (i+1, *x.0, f32::max(*x.0, *x.1), f32::min(*x.0, *x.1), *x.1))
         .collect::<Vec<_>>()
-}
-
-
-#[cfg(test)]
-mod test{
-
-    #[test]
-    fn test_plot_candles() {
-        let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        println!("A: {:?}", super::parse_data(v));
-        let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        super::run(v, "test");
-    }
 }
