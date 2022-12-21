@@ -9,6 +9,7 @@ edition = "2021"
 minifb = "0.23.0"
 chrono = "0.4.23"
 plotters = "0.3.1"
+colorous = "1.0.9"
 
 #[dependencies.plotters]
 #git = "https://github.com/plotters-rs/plotters"
