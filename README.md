@@ -20,3 +20,10 @@ base_plot::plot_multiple_series(vec![vec![..], vec![..], ..], "file_name", "capt
 use candles::plot;
 candles::plot(vec![..], <candle_size>, "file_name", "caption");
 ```
+
+
+## Bar chart (liquidity chart)
+```rust
+use liquidity_chart::plot;
+liquidity_plot::plot(vec![vec![..], ..], vec![<market_names>], "file_name", "caption");
+```
