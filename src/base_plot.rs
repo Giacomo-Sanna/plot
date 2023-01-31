@@ -1,64 +1,66 @@
 use plotters::prelude::*;
+use crate::helpers;
+
 pub fn plot(v: Vec<f32>, file_name: &str, caption: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let dir = "plots-output";
-    let filepath = format!("{}/{}.png", dir, file_name);
-    let root = BitMapBackend::new(&filepath, (1280, 960)).into_drawing_area();
+    if v.is_empty() {
+        return Err("ERROR: Vector is empty!".into());
+    }
+
+    let filepath = helpers::get_file_path(file_name);
+
+    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT)).into_drawing_area();
     root.fill(&WHITE)?;
 
-    let el_max = v.iter().copied().fold(f32::NAN, f32::max);
-    let el_min = v.iter().copied().fold(f32::NAN, f32::min);
+    let el_max = helpers::f32_max(&v);
+    let el_min = helpers::f32_min(&v);
 
     let mut chart = ChartBuilder::on(&root)
         .caption(caption,
-                 ("sans-serif", 50).into_font())
+                 helpers::graph::DEFAULT_FONT.into_font())
         .margin(5)
-        .x_label_area_size(60)
-        .y_label_area_size(60)
+        .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
+        .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .build_cartesian_2d(0..(v.len()-1), (el_min*0.9)..(el_max*1.1))?;
 
     chart.configure_mesh().draw()?;
 
     chart
         .draw_series(LineSeries::new(
-            // (-50..=50).map(|x| x as f32 / 50.0).map(|x| (x, x * x)),
             v.into_iter().enumerate(),
             &BLUE,
         ))?;
-        // .label("y = x^2")
-        // .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
 
-    // chart
-    //     .configure_series_labels()
-    //     .background_style(&WHITE.mix(0.8))
-    //     .border_style(&BLACK)
-    //     .draw()?;
-
-    root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
+    root.present().expect(helpers::graph::ERROR_PRESENTING);
 
     Ok(())
 }
 
 pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let dir = "plots-output";
-    let filepath = format!("{}/{}.png", dir, file_name);
-    let root = BitMapBackend::new(&filepath, (1280, 960)).into_drawing_area();
+    let contains_empty = vec.iter().fold(false, |prev, v| prev || v.is_empty());
+    if vec.is_empty() || contains_empty {
+        return Err("ERROR: Vector is empty or contains an empty element!".into());
+    }
+
+    let filepath = helpers::get_file_path(file_name);
+
+    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT)).into_drawing_area();
     root.fill(&WHITE)?;
 
     let mut el_max = f32::NAN;
     let mut el_min = f32::NAN;
 
     for v in vec.iter() {
-        el_max = f32::max(el_max, v.iter().copied().fold(f32::NAN, f32::max));
-        el_min = f32::min(el_min, v.iter().copied().fold(f32::NAN, f32::min));
+        el_max = helpers::f32_max(&v);
+        el_min = helpers::f32_min(&v);
     }
     let max_len = vec.iter().map(|v| v.len()).max().unwrap();
 
     let mut chart = ChartBuilder::on(&root)
         .caption(caption,
-                 ("sans-serif", 50).into_font())
+                 helpers::graph::DEFAULT_FONT.into_font())
         .margin(5)
-        .x_label_area_size(60)
-        .y_label_area_size(60)
+        .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
+        .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .build_cartesian_2d(0..(max_len -1), (el_min*0.9)..(el_max*1.1))?;
 
     chart.configure_mesh().draw()?;
@@ -68,17 +70,15 @@ pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) 
     let n = vec.len();
 
     for (i, v) in vec.into_iter().enumerate(){
-        let cor = gradient.eval_rational(i, n);
+        let rgb = gradient.eval_rational(i, n);
 
         chart
             .draw_series(LineSeries::new(
-                // (-50..=50).map(|x| x as f32 / 50.0).map(|x| (x, x * x)),
                 v.into_iter().enumerate(),
-                RGBColor(cor.r, cor.g, cor.b),
+                RGBColor(rgb.r, rgb.g, rgb.b),
             ))?;
     }
 
-    root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
-
+    root.present().expect(helpers::graph::ERROR_PRESENTING);
     Ok(())
 }
