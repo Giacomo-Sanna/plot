@@ -1,3 +1,4 @@
+use std::f32;
 use plotters::prelude::*;
 use crate::helpers;
 
@@ -50,8 +51,8 @@ pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) 
     let mut el_min = f32::NAN;
 
     for v in vec.iter() {
-        el_max = helpers::f32_max(&v);
-        el_min = helpers::f32_min(&v);
+        el_max = f32::max(helpers::f32_max(&v), el_max);
+        el_min = f32::min(helpers::f32_min(&v), el_min);
     }
     let max_len = vec.iter().map(|v| v.len()).max().unwrap();
 
