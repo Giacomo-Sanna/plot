@@ -15,7 +15,7 @@ pub fn plot(v: Vec<f32>, candle_size: usize, file_name: &str, caption: &str) -> 
 
     let el_max = helpers::f32_max(&v);
     let el_min = helpers::f32_min(&v);
-    let data = parse_data(&v, candle_size);
+    let data = parse_data(&v, candle_size, None);
 
     // Get date range
     let (start_date, end_date) = (
@@ -59,14 +59,14 @@ pub fn plot(v: Vec<f32>, candle_size: usize, file_name: &str, caption: &str) -> 
     Ok(())
 }
 
-pub fn parse_data(v: &[f32], candle_size: usize) -> Vec<(usize, f32, f32, f32, f32)> {
+pub fn parse_data(v: &[f32], candle_size: usize, custom_candle_start_index: Option<usize>) -> Vec<(usize, f32, f32, f32, f32)> {
 
-    fn parse_data_inner(data: Windows<f32>, candle_size: usize) -> Vec<(usize, f32, f32, f32, f32)> {
+    fn parse_data_inner(data: Windows<f32>, candle_size: usize, candle_start_index: usize) -> Vec<(usize, f32, f32, f32, f32)> {
         data.enumerate()
             .filter(|(i, _)| i % candle_size == 0)
             .enumerate()
             .map(|(i, (_, v))| (
-                ((i + 1),
+                ((i + candle_start_index),
                  *v.first().unwrap(),
                  helpers::f32_max(v),
                  helpers::f32_min(v),
@@ -75,13 +75,18 @@ pub fn parse_data(v: &[f32], candle_size: usize) -> Vec<(usize, f32, f32, f32, f
             .collect::<Vec<_>>()
     }
 
+    let candle_start_index = match custom_candle_start_index {
+        Some(i) => i,
+        None => 1,
+    };
     return if v.len() < candle_size {
-        parse_data_inner(v.windows(v.len()), candle_size)
+        parse_data_inner(v.windows(v.len()), candle_size, candle_start_index)
     } else {
-        let new_el = vec![*v.last().unwrap(); v.len() % candle_size];
+        let new_el = vec![*v.last().unwrap(); (v.len() - 1) % candle_size];
         let new_v = [v, &new_el].concat();
-        // println!("Vector: {:?}", new_v);
+        // println!("New Vector: {:?}", new_v);
+        // println!("New Vector Length: {}", new_v.len());
         // println!("Window: {:?}", new_v.windows(candle_size + 1));
-        parse_data_inner(new_v.windows(candle_size + 1), candle_size)
+        parse_data_inner(new_v.windows(candle_size + 1), candle_size, candle_start_index)
     }
 }

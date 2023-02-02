@@ -1,7 +1,16 @@
-# Come mostrare grafico
-Prerequisito: creare la cartella `plots-output` sotto `root`
+# Charts
+
+## Grafico a candele interattivo
+```rust
+cargo run --example interactive_candles 
+```
 
 ## Base plot
+Per eseguire tutti i grafici
+```rust
+cargo test
+```
+
 
 ### una serie
 ```rust

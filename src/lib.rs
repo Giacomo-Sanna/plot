@@ -1,7 +1,7 @@
 pub mod base_plot;
-mod candles;
-mod liquidity_plot;
-mod helpers;
+pub mod candles;
+pub mod liquidity_plot;
+pub mod helpers;
 
 #[cfg(test)]
 mod tests {
@@ -48,12 +48,11 @@ mod tests {
             vec![10., 5., 6., 3.],
             vec![3., 8., 5., 2.]];
 
-        let market_names: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i)).collect();
+        let market_names: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i+1)).collect();
 
         liquidity_plot::plot(v, market_names, "test_plot_liquidity", "Liquidity").expect("TODO: panic message");
         assert!(liquidity_plot::plot(vec![], vec![], "error", "").is_err());
         assert!(liquidity_plot::plot(vec![vec![]], vec![], "error", "").is_err());
         assert!(liquidity_plot::plot(vec![vec![1.], vec![2.]], vec!["".to_string()], "error", "").is_err());
     }
-
 }
