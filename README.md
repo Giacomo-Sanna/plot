@@ -7,6 +7,7 @@ Eseguibile tramite il seguente comando
 cargo run --example interactive_candles 
 ```
 ### Instructions:
+- ←/→ = Previous/next series
 - ↑/↓ = Adjust candle size
 - +/- = Adjust sample rate
 - 1/2 = Adjust start index

@@ -2,6 +2,7 @@ pub mod base_plot;
 pub mod candles;
 pub mod liquidity_plot;
 pub mod helpers;
+pub mod interactive_candles;
 
 #[cfg(test)]
 mod tests {
