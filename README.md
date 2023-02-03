@@ -1,9 +1,19 @@
 # Charts
 
 ## Grafico a candele interattivo
+![gif architettura](./images/candles.gif)
+Eseguibile tramite il seguente comando
 ```rust
 cargo run --example interactive_candles 
 ```
+### Instructions:
+- ↑/↓ = Adjust candle size
+- +/- = Adjust sample rate
+- 1/2 = Adjust start index
+- 9/0 = Adjust end index
+- P = Start/Stop
+- R = Restart
+- \<Esc> = Exit
 
 ## Base plot
 Per eseguire tutti i grafici
