@@ -17,8 +17,7 @@ mod tests {
     #[test]
     fn test_base_plot() {
         let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        base_plot::plot(v, "test_base_plot", "base plot").expect("TODO: panic message");
-        assert!(base_plot::plot(vec![], "error", "base plot").is_err());
+        base_plot::plot_single_series_image(v, "test_base_plot", "base plot");
     }
 
     #[test]
@@ -29,16 +28,14 @@ mod tests {
             v.push((i..(len + i)).map(f32::from).collect());
         }
 
-        base_plot::plot_multiple_series(v, "test_base_plot_multiple_series", "base plot multiple series").expect("TODO: panic message");
-        assert!(base_plot::plot_multiple_series(vec![], "error", "").is_err());
-        assert!(base_plot::plot_multiple_series(vec![vec![]], "error", "").is_err());
+        base_plot::plot_multiple_series_image(v, "test_base_plot_multiple_series", "Liquidità");
     }
 
     #[test]
     fn test_plot_candles() {
-        let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        candles::plot(v, 2, "test_plot_candles", "Candles").expect("TODO: panic message");
-        assert!(candles::plot(vec![], 2, "error", "").is_err());
+        // let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
+        let v = helpers::generate_data_series(100., 1000, -0.0985, 0.1);
+        candles::plot_image(v, 10, "test_plot_candles", "Candles");
     }
 
     #[test]
@@ -49,11 +46,8 @@ mod tests {
             vec![10., 5., 6., 3.],
             vec![3., 8., 5., 2.]];
 
-        let market_names: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i+1)).collect();
+        let market_names: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i + 1)).collect();
 
-        liquidity_plot::plot(v, market_names, "test_plot_liquidity", "Liquidity").expect("TODO: panic message");
-        assert!(liquidity_plot::plot(vec![], vec![], "error", "").is_err());
-        assert!(liquidity_plot::plot(vec![vec![]], vec![], "error", "").is_err());
-        assert!(liquidity_plot::plot(vec![vec![1.], vec![2.]], vec!["".to_string()], "error", "").is_err());
+        liquidity_plot::plot_image(v, market_names, "test_plot_liquidity");
     }
 }

@@ -1,34 +1,38 @@
 use plotters::coord::Shift;
 use plotters::prelude::*;
+use std::error::Error;
 use crate::helpers;
 
-#[allow(unused_variables)]
-pub fn plot(v: Vec<Vec<f32>>, market_names: Vec<String>, file_name: &str, caption: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_image(v: Vec<Vec<f32>>, market_names: Vec<String>, file_name: &str) {
+    let filepath = helpers::get_file_path(file_name);
+    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    plot(v, market_names, root).expect("ERROR: Unable to plot image!");
+    println!("Liquidity chart has been saved to {}", &filepath);
+}
+
+pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<Vec<f32>>, market_names: Vec<String>, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
         return Err("ERROR: Vector is empty or contains an empty element!".into());
     }
-
     if v.len() != market_names.len() {
         return Err("ERROR: Vector of market names must be the same length as the vector of vectors!".into());
     }
 
-    let filepath = helpers::get_file_path(file_name);
-
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT)).into_drawing_area();
+    let root = backend.into_drawing_area();
 
     let child_drawing_areas = root.split_evenly((1, v.len()));
 
-    for (area,i) in child_drawing_areas.into_iter().zip(0..) {
+    for (area, i) in child_drawing_areas.into_iter().zip(0..) {
         plot_subplot(area, v[i].clone(), market_names[i].clone())?;
     }
     Ok(())
 }
 
-fn plot_subplot(root: DrawingArea<BitMapBackend, Shift>, v: Vec<f32>, market_name: String) -> Result<(), Box<dyn std::error::Error>>{
+fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: Vec<f32>, market_name: String) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
-    let el_max =  helpers::f32_max(&v);
+    let el_max = helpers::f32_max(&v);
 
     let mut chart = ChartBuilder::on(&root)
         .caption(market_name,

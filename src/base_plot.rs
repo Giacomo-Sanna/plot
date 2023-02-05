@@ -1,15 +1,20 @@
-use std::f32;
+use std::error::Error;
 use plotters::prelude::*;
 use crate::helpers;
 
-pub fn plot(v: Vec<f32>, file_name: &str, caption: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_single_series_image(v: Vec<f32>, file_name: &str, caption: &str) {
+    let filepath = helpers::get_file_path(file_name);
+    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    plot(v, caption, root).expect("ERROR: Unable to plot image!");
+    println!("Single series chart has been saved to {}", &filepath);
+}
+
+pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<f32>, caption: &str, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
     if v.is_empty() {
         return Err("ERROR: Vector is empty!".into());
     }
 
-    let filepath = helpers::get_file_path(file_name);
-
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT)).into_drawing_area();
+    let root = backend.into_drawing_area();
     root.fill(&WHITE)?;
 
     let el_max = helpers::f32_max(&v);
@@ -21,7 +26,7 @@ pub fn plot(v: Vec<f32>, file_name: &str, caption: &str) -> Result<(), Box<dyn s
         .margin(5)
         .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .build_cartesian_2d(0..(v.len()-1), (el_min*0.9)..(el_max*1.1))?;
+        .build_cartesian_2d(0..(v.len() - 1), (el_min * 0.9)..(el_max * 1.1))?;
 
     chart.configure_mesh().draw()?;
 
@@ -31,20 +36,25 @@ pub fn plot(v: Vec<f32>, file_name: &str, caption: &str) -> Result<(), Box<dyn s
             &BLUE,
         ))?;
 
-    root.present().expect(helpers::graph::ERROR_PRESENTING);
+    root.present()?;
 
     Ok(())
 }
 
-pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_multiple_series_image(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) {
+    let filepath = helpers::get_file_path(file_name);
+    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    plot_multiple_series(vec, caption, root).expect("ERROR: Unable to plot image!");
+    println!("Multiple series chart has been saved to {}", &filepath);
+}
+
+pub fn plot_multiple_series<'a, DB: DrawingBackend + 'a>(vec: Vec<Vec<f32>>, caption: &str, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = vec.iter().fold(false, |prev, v| prev || v.is_empty());
     if vec.is_empty() || contains_empty {
         return Err("ERROR: Vector is empty or contains an empty element!".into());
     }
 
-    let filepath = helpers::get_file_path(file_name);
-
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT)).into_drawing_area();
+    let root = backend.into_drawing_area();
     root.fill(&WHITE)?;
 
     let mut el_max = f32::NAN;
@@ -62,7 +72,7 @@ pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) 
         .margin(5)
         .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .build_cartesian_2d(0..(max_len -1), (el_min*0.9)..(el_max*1.1))?;
+        .build_cartesian_2d(0..(max_len - 1), (el_min * 0.9)..(el_max * 1.1))?;
 
     chart.configure_mesh().draw()?;
 
@@ -70,7 +80,7 @@ pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) 
     let gradient = colorous::SINEBOW;
     let n = vec.len();
 
-    for (i, v) in vec.into_iter().enumerate(){
+    for (i, v) in vec.into_iter().enumerate() {
         let rgb = gradient.eval_rational(i, n);
 
         chart
@@ -80,6 +90,6 @@ pub fn plot_multiple_series(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) 
             ))?;
     }
 
-    root.present().expect(helpers::graph::ERROR_PRESENTING);
+    root.present()?;
     Ok(())
 }

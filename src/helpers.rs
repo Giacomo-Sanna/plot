@@ -7,7 +7,7 @@ pub mod graph {
     pub const LABEL_AREA_SIZE: u32 = 60;
     pub const DEFAULT_FONT: (&str, u32) = ("sans-serif", 50);
     pub(crate) const DEFAULT_DIR: &str = "plots-output";
-    pub const ERROR_PRESENTING: &str = "Unable to write result to file please make sure directory 'plots-output' exists under root project dir";
+    // pub const ERROR_PRESENTING: &str = "ERROR: Unable to write result to file please make sure directory 'plots-output' exists under root project dir";
 }
 
 pub fn f32_max(v: &[f32]) -> f32 {
@@ -18,15 +18,15 @@ pub fn f32_min(v: &[f32]) -> f32 {
     v.iter().copied().fold(f32::NAN, f32::min)
 }
 
-pub fn get_file_path(file_name: &str) -> String {
-    format!("{}/{}.png", graph::DEFAULT_DIR , file_name)
+pub fn get_file_path<'a>(file_name: &str) -> String {
+    format!("{}/{}.png", graph::DEFAULT_DIR, file_name)
 }
 
 pub fn generate_data_series(start_value: f32, len: usize, min_change: f32, max_change: f32) -> Vec<f32> {
     let mut rng = rand::thread_rng();
     let mut v = vec![start_value];
     let mut prev = start_value;
-    for _ in 0..len-1 {
+    for _ in 0..len - 1 {
         let curr = prev + rng.gen_range(min_change..max_change) * prev;
         v.push(curr);
         prev = curr;
@@ -52,7 +52,7 @@ impl Borrow<[u8]> for BufferWrapper {
         unsafe {
             std::slice::from_raw_parts(
                 self.0.as_ptr() as *const u8,
-                self.0.len() * 4
+                self.0.len() * 4,
             )
         }
     }
@@ -65,7 +65,7 @@ impl BorrowMut<[u8]> for BufferWrapper {
         unsafe {
             std::slice::from_raw_parts_mut(
                 self.0.as_mut_ptr() as *mut u8,
-                self.0.len() * 4
+                self.0.len() * 4,
             )
         }
     }
