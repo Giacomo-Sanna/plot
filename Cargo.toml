@@ -10,15 +10,4 @@ minifb = "0.23.0"
 chrono = "0.4.23"
 colorous = "1.0.9"
 rand = "0.8.5"
-
-[dependencies.plotters]
-git = "https://github.com/plotters-rs/plotters"
-
-#[dependencies.plotters]
-#git = "https://github.com/plotters-rs/plotters"
-#default_features = false
-#features = ["ttf"]
-
-[dependencies.plotters-bitmap]
-default_features = false
-git = "https://github.com/plotters-rs/plotters"
+plotters = "0.3.1"

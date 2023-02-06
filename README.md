@@ -6,7 +6,7 @@
 Eseguibile tramite il seguente comando
 
 ```rust
-cargo run -- example interactive_candles 
+cargo run --example interactive_candles 
 ```
 
 ### Instructions:

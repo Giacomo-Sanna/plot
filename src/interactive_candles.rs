@@ -2,13 +2,12 @@ use std::borrow::{Borrow, BorrowMut};
 use plotters::prelude::*;
 use std::error::Error;
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
-use plotters_bitmap::bitmap_pixel::BGRXPixel;
-use plotters_bitmap::BitMapBackend;
 use std::time::SystemTime;
 use plotters::chart::ChartState;
 use plotters::coord::types::{RangedCoordf32, RangedCoordusize};
 use crate::helpers;
 use crate::candles;
+use plotters::backend::BGRXPixel;
 
 const W: usize = 800;
 const H: usize = 600;
