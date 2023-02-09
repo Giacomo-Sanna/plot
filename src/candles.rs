@@ -26,7 +26,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
     let el_min = helpers::f32_min(&v);
     let data = parse_data(&v, candle_size, custom_candle_start_index);
 
-    let (x_start, x_end) = (data[0].0 - 1, data[data.len() - 1].0 + 1);
+    let (x_start, x_end) = (data[0].0 - candle_size as isize, data[data.len() - 1].0 + candle_size as isize);
 
     let (y_start, y_end) = match custom_y_range {
         None => (el_min * 0.1, el_max * 1.05),
@@ -49,7 +49,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
         .draw()?;
 
     chart
-        .draw_series(data.iter().map(|x| {
+        .draw_series(data.iter().enumerate().map(|(i, x)| {
             CandleStick::new(
                 x.0,
                 x.1,
@@ -68,18 +68,18 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
     Ok(())
 }
 
-pub fn parse_data(v: &[f32], candle_size: usize, custom_candle_start_index: Option<usize>) -> Vec<(usize, f32, f32, f32, f32)> {
-    fn parse_data_inner(data: Windows<f32>, candle_size: usize, candle_start_index: usize) -> Vec<(usize, f32, f32, f32, f32)> {
+pub fn parse_data(v: &[f32], candle_size: usize, custom_candle_start_index: Option<usize>) -> Vec<(isize, f32, f32, f32, f32)> {
+    fn parse_data_inner(data: Windows<f32>, candle_size: usize, candle_start_index: usize) -> Vec<(isize, f32, f32, f32, f32)> {
         data.enumerate()
             .filter(|(i, _)| i % candle_size == 0)
             .enumerate()
             .map(|(i, (_, v))| (
-                ((i + candle_start_index),
+                (candle_start_index + candle_size*i) as isize,
                  *v.first().unwrap(),
                  helpers::f32_max(v),
                  helpers::f32_min(v),
                  *v.last().unwrap())
-            ))
+            )
             .collect::<Vec<_>>()
     }
 
@@ -90,7 +90,7 @@ pub fn parse_data(v: &[f32], candle_size: usize, custom_candle_start_index: Opti
     return if v.len() < candle_size {
         parse_data_inner(v.windows(v.len()), candle_size, candle_start_index)
     } else {
-        let new_el = vec![*v.last().unwrap(); (v.len() - 1) % candle_size];
+        let new_el = vec![*v.last().unwrap(); candle_size];
         let new_v = [v, &new_el].concat();
         parse_data_inner(new_v.windows(candle_size + 1), candle_size, candle_start_index)
     };

@@ -4,7 +4,7 @@ use std::error::Error;
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use std::time::SystemTime;
 use plotters::chart::ChartState;
-use plotters::coord::types::{RangedCoordf32, RangedCoordusize};
+use plotters::coord::types::{RangedCoordf32, RangedCoordi32};
 use crate::helpers;
 use crate::candles;
 use plotters::backend::BGRXPixel;
@@ -16,7 +16,7 @@ const LABEL: u32 = 30;
 
 const SAMPLE_RATE: f64 = 60.0;
 
-fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize) -> Result<ChartState<Cartesian2d<RangedCoordusize, RangedCoordf32>>, Box<dyn Error>> {
+fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize) -> Result<ChartState<Cartesian2d<RangedCoordi32, RangedCoordf32>>, Box<dyn Error>> {
     let el_max = helpers::f32_max(&v);
     let el_min = helpers::f32_min(&v);
 
@@ -24,8 +24,8 @@ fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_siz
 
     let candles_data = candles::parse_data(&v, candle_size, Some(custom_candle_start_index + 1));
     let (start_date, end_date) = (
-        custom_candle_start_index,
-        candles_data[candles_data.len() - 1].0 + 1,
+        (custom_candle_start_index as i32 - candle_size as i32) ,
+        (candles_data[candles_data.len() - 1].0 as i32 + candle_size as i32),
     );
 
     let cs = {
@@ -53,7 +53,7 @@ fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_siz
     Ok(cs)
 }
 
-fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordusize, RangedCoordf32>>) -> Result<(), Box<dyn Error>> {
+fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordi32, RangedCoordf32>>) -> Result<(), Box<dyn Error>> {
     let root = BitMapBackend::<BGRXPixel>::with_buffer_and_format(
         buf.borrow_mut(),
         (W as u32, H as u32),
@@ -76,7 +76,7 @@ fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usi
         chart
             .draw_series(data.iter().map(|x| {
                 CandleStick::new(
-                    x.0,
+                    x.0 as i32,
                     x.1,
                     x.2,
                     x.3,
