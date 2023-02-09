@@ -3,19 +3,19 @@ use plotters::prelude::*;
 use std::error::Error;
 use crate::helpers;
 
-pub fn plot_image(v: Vec<Vec<f32>>, market_names: Vec<String>, file_name: &str) {
+pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, market_names, root).expect("ERROR: Unable to plot image!");
+    plot(v, captions, root, None).expect("ERROR: Unable to plot image!");
     println!("Liquidity chart has been saved to {}", &filepath);
 }
 
-pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<Vec<f32>>, market_names: Vec<String>, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
+pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
         return Err("ERROR: Vector is empty or contains an empty element!".into());
     }
-    if v.len() != market_names.len() {
+    if v.len() != captions.len() {
         return Err("ERROR: Vector of market names must be the same length as the vector of vectors!".into());
     }
 
@@ -24,23 +24,29 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<Vec<f32>>, market_names: Vec<Str
     let child_drawing_areas = root.split_evenly((1, v.len()));
 
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, v[i].clone(), market_names[i].clone())?;
+        plot_subplot(area, &v[i], &captions[i], custom_y_range)?;
     }
     Ok(())
 }
 
-fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: Vec<f32>, market_name: String) -> Result<(), Box<dyn Error + 'a>> {
+fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
     let el_max = helpers::f32_max(&v);
 
+    let (y_start, y_end) = match custom_y_range {
+        Some((start, end)) => (start, end),
+        None => { (0., el_max)
+        }
+    };
+
     let mut chart = ChartBuilder::on(&root)
-        .caption(market_name,
+        .caption(caption,
                  helpers::graph::DEFAULT_FONT.into_font())
         .margin(5)
         .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .build_cartesian_2d((0.)..(v.len() as f32), (0.)..(el_max))?;
+        .build_cartesian_2d((0.)..( v.len() as f32), (y_start)..(y_end))?;
 
     chart.configure_mesh().draw()?;
 

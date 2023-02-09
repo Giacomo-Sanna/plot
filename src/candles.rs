@@ -7,11 +7,14 @@ use crate::helpers;
 pub fn plot_image(v: Vec<f32>, candle_size: usize, file_name: &str, caption: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(&v, candle_size, caption, root, helpers::graph::LABEL_AREA_SIZE, helpers::graph::WIDTH, helpers::graph::DEFAULT_FONT).expect("ERROR: Unable to plot image!");
+    plot(&v, candle_size, caption, root, helpers::graph::LABEL_AREA_SIZE, helpers::graph::WIDTH, helpers::graph::DEFAULT_FONT, None, None).expect("ERROR: Unable to plot image!");
     println!("Candlestick chart has been saved to {}", &filepath);
 }
 
-pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption: &str, backend: DB, label_area_size: u32, width: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
+pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption: &str, backend: DB,
+                                         label_area_size: u32, width: u32, font: (&str, u32),
+                                         custom_candle_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>)
+    -> Result<(), Box<dyn Error + 'a>> {
     if v.is_empty() {
         return Err("ERROR: Vector is empty!".into());
     }
@@ -21,13 +24,14 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
 
     let el_max = helpers::f32_max(&v);
     let el_min = helpers::f32_min(&v);
-    let data = parse_data(&v, candle_size, None);
+    let data = parse_data(&v, candle_size, custom_candle_start_index);
 
-    // Get date range
-    let (start_date, end_date) = (
-        data[0].0 - 1,
-        data[data.len() - 1].0 + 1,
-    );
+    let (x_start, x_end) = (data[0].0 - 1, data[data.len() - 1].0 + 1);
+
+    let (y_start, y_end) = match custom_y_range {
+        None => (el_min * 0.1, el_max * 1.05),
+        Some((y_min, y_max)) => (y_min, y_max)
+    };
 
     // Basic chart configuration
     let mut chart = ChartBuilder::on(&root)
@@ -37,7 +41,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
             caption,
             font.into_font(),
         )
-        .build_cartesian_2d(start_date..end_date, (el_min * 0.1)..(el_max * 1.2))?;
+        .build_cartesian_2d(x_start..x_end, (y_start)..(y_end))?;
 
     chart
         .configure_mesh()
@@ -88,9 +92,6 @@ pub fn parse_data(v: &[f32], candle_size: usize, custom_candle_start_index: Opti
     } else {
         let new_el = vec![*v.last().unwrap(); (v.len() - 1) % candle_size];
         let new_v = [v, &new_el].concat();
-        // println!("New Vector: {:?}", new_v);
-        // println!("New Vector Length: {}", new_v.len());
-        // println!("Window: {:?}", new_v.windows(candle_size + 1));
         parse_data_inner(new_v.windows(candle_size + 1), candle_size, candle_start_index)
     };
 }

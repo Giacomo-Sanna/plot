@@ -46,8 +46,8 @@ mod tests {
             vec![10., 5., 6., 3.],
             vec![3., 8., 5., 2.]];
 
-        let market_names: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i + 1)).collect();
+        let captions: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i + 1)).collect();
 
-        liquidity_plot::plot_image(v, market_names, "test_plot_liquidity");
+        liquidity_plot::plot_image(vec![&v[0], &v[1], &v[2], &v[3]], captions, "test_plot_liquidity");
     }
 }
