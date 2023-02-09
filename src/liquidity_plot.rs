@@ -6,11 +6,12 @@ use crate::helpers;
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, captions, root, None).expect("ERROR: Unable to plot image!");
+    plot(v, captions, root, None, None).expect("ERROR: Unable to plot image!");
     println!("Liquidity chart has been saved to {}", &filepath);
 }
 
-pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
+pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,
+                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
         return Err("ERROR: Vector is empty or contains an empty element!".into());
@@ -23,16 +24,24 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
 
     let child_drawing_areas = root.split_evenly((1, v.len()));
 
+    let x_start_index = match custom_x_start_index {
+        None => 0,
+        Some(index) => index
+    };
+
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, &v[i], &captions[i], custom_y_range)?;
+        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range)?;
     }
     Ok(())
 }
 
-fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
+fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
+                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
     let el_max = helpers::f32_max(&v);
+
+    let (x_start, x_end) = (x_start_index as f32, (x_start_index + v.len()) as f32);
 
     let (y_start, y_end) = match custom_y_range {
         Some((start, end)) => (start, end),
@@ -46,16 +55,18 @@ fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[
         .margin(5)
         .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
         .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .build_cartesian_2d((0.)..( v.len() as f32), (y_start)..(y_end))?;
+        .build_cartesian_2d((x_start)..(x_end), (y_start)..(y_end))?;
 
     chart.configure_mesh().draw()?;
 
-    let gradient = colorous::SINEBOW;
+    let gradient = colorous::COOL;
     let n = v.len();
 
     chart.draw_series(v.iter().enumerate().map(|(x, y)| {
         let color = gradient.eval_rational(x, n);
-        let mut bar = Rectangle::new([(x as f32, 0.), (x as f32 + 1., *y)], RGBColor(color.r, color.g, color.b).filled());
+        let mut bar = Rectangle::new(
+            [((x + x_start_index) as f32, 0.), ((x + x_start_index) as f32 + 1., *y)],
+            RGBColor(color.r, color.g, color.b).filled());
         bar.set_margin(0, 0, 5, 5);
         bar
     }))?;
