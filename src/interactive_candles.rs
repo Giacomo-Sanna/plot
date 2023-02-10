@@ -106,7 +106,7 @@ fn initialize_ts(start_ts: SystemTime) -> f64 {
         .as_secs_f64()
 }
 
-pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
+pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>, candle_size: usize) -> Result<(), Box<dyn Error>> {
     let mut v_index = 0;
     let mut v = &vec[v_index].1;
     let mut v_name = *&vec[v_index].0;
@@ -116,7 +116,7 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
     let mut buf = helpers::BufferWrapper::new(W, H);
 
     let mut paused = false;
-    let mut candle_size = 10;
+    let mut candle_size = candle_size;
     let mut sample_rate = SAMPLE_RATE;
     let mut start_index = 0;
     let mut end_index = v.len();
@@ -140,6 +140,10 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
     let start_ts = SystemTime::now();
     let mut ts = initialize_ts(start_ts);
 
+    let mut previous_key = Key::Unknown;
+    let mut increment = 0;
+    let base: usize = 2;
+
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let epoch = initialize_ts(start_ts);
 
@@ -159,13 +163,25 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
 
         let keys = window.get_keys_pressed(KeyRepeat::Yes);
         for key in keys {
+            if previous_key == key { increment+=1; } else { increment = 0; }
+            previous_key = key;
             match key {
+                // increment sample rate
                 Key::Equal => {
-                    sample_rate += 1.0;
+                    if sample_rate < 100_000.
+                    {
+                        sample_rate += base.pow(increment) as f64;
+                        if sample_rate > 100_000. { sample_rate = 100_000. }
+                    }
                 }
+                // decrement sample rate
                 Key::Minus => {
-                    if sample_rate > 1.0 { sample_rate -= 1.0 };
+                    if sample_rate > 1. {
+                        sample_rate -= base.pow(increment) as f64;
+                        if sample_rate < 1. { sample_rate = 1. }
+                    };
                 }
+                // pause/resume
                 Key::P => {
                     if !paused {
                         paused = true;
@@ -174,17 +190,20 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
                         ts = initialize_ts(start_ts);
                     }
                 }
+                // restart
                 Key::R => {
                     curr_index = start_index;
                     last_index_flushed = start_index;
                     ts = initialize_ts(start_ts);
                     reloading_required = true;
                 }
+                // increment candle size
                 Key::Up => {
                     candle_size += 1;
                     cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                     reloading_required = true;
                 }
+                // decrement candle size
                 Key::Down => {
                     if candle_size > 1 {
                         candle_size -= 1;
@@ -192,6 +211,7 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
                         reloading_required = true;
                     }
                 }
+                // go to next series
                 Key::Right => {
                     v_index = (v_index + 1) % vec.len();
                     v = &vec[v_index].1;
@@ -203,6 +223,7 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
                     ts = initialize_ts(start_ts);
                     cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                 }
+                // go to previous series
                 Key::Left => {
                     if v_index == 0 { v_index = vec.len() - 1 } else { v_index -= 1 };
                     v = &vec[v_index].1;
@@ -214,31 +235,39 @@ pub fn launch_gui(vec: Vec<(&str, Vec<f32>)>) -> Result<(), Box<dyn Error>> {
                     ts = initialize_ts(start_ts);
                     cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                 }
+                // increment start index
                 Key::Key1 => {
                     if start_index > 0 {
-                        start_index -= 1;
+                        if start_index < base.pow(increment) { start_index = 0; } else { start_index -= base.pow(increment); }
                         cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                         reloading_required = true;
                     }
                 }
+                // decrement start index
                 Key::Key2 => {
-                    if start_index < end_index - 2
+                    if start_index +2 < end_index
                         && (start_index + 1 < curr_index) {
-                        start_index += 1;
+                        start_index += base.pow(increment);
+                        if start_index + 2 > end_index { start_index = end_index - 2; }
+                        if start_index + 1 > curr_index { curr_index = start_index + 1; }
                         cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                         reloading_required = true;
                     }
                 }
+                // increment end index
                 Key::Key0 => {
                     if end_index < v.len() {
-                        end_index += 1;
+                        end_index += base.pow(increment);
+                        if end_index > v.len() { end_index = v.len(); }
                         cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                         reloading_required = true;
                     }
                 }
+                // decrement end index
                 Key::Key9 => {
                     if end_index > start_index + 2 {
-                        end_index -= 1;
+                        end_index -= base.pow(increment);
+                        if end_index < start_index + 2 { end_index = start_index + 2; }
                         if end_index - 1 < curr_index { curr_index = end_index - 1; }
                         cs = initialize_buff_chart(&mut buf, &v[start_index..end_index], candle_size, start_index)?;
                         reloading_required = true;
