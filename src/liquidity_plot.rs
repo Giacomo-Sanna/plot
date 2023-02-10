@@ -6,12 +6,15 @@ use crate::helpers;
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, captions, root, None, None).expect("ERROR: Unable to plot image!");
+    plot(v, captions, root, None, None,
+         helpers::graph::LABEL_AREA_SIZE, 5, helpers::graph::DEFAULT_FONT)
+        .expect("ERROR: Unable to plot image!");
     println!("Liquidity chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,
-                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
+                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>,
+                                         label_area_size: u32, margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
         return Err("ERROR: Vector is empty or contains an empty element!".into());
@@ -30,13 +33,14 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
     };
 
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range)?;
+        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, label_area_size, margin, font)?;
     }
     Ok(())
 }
 
 fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
-                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>) -> Result<(), Box<dyn Error + 'a>> {
+                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>,
+                                             label_area_size: u32, margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
     let el_max = helpers::f32_max(&v);
@@ -45,16 +49,16 @@ fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[
 
     let (y_start, y_end) = match custom_y_range {
         Some((start, end)) => (start, end),
-        None => { (0., el_max)
+        None => {
+            (0., el_max * 1.05)
         }
     };
 
     let mut chart = ChartBuilder::on(&root)
-        .caption(caption,
-                 helpers::graph::DEFAULT_FONT.into_font())
-        .margin(5)
-        .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
+        .caption(caption, font.into_font())
+        .margin(margin)
+        .x_label_area_size(label_area_size)
+        .y_label_area_size(label_area_size)
         .build_cartesian_2d((x_start)..(x_end), (y_start)..(y_end))?;
 
     chart.configure_mesh().draw()?;
