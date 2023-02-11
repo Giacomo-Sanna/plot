@@ -7,7 +7,7 @@ pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
     plot(v, captions, root, None, None,
-         helpers::graph::LABEL_AREA_SIZE, 5, helpers::graph::DEFAULT_FONT)
+         helpers::graph::LABEL_AREA_SIZE, helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
     println!("Liquidity chart has been saved to {}", &filepath);
 }
@@ -38,7 +38,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
     Ok(())
 }
 
-fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
+pub(crate) fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
                                              x_start_index: usize, custom_y_range: Option<(f32, f32)>,
                                              label_area_size: u32, margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
@@ -71,7 +71,7 @@ fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[
         let mut bar = Rectangle::new(
             [((x + x_start_index) as f32, 0.), ((x + x_start_index) as f32 + 1., *y)],
             RGBColor(color.r, color.g, color.b).filled());
-        bar.set_margin(0, 0, 5, 5);
+        bar.set_margin(0, 0, 1, 1);
         bar
     }))?;
 

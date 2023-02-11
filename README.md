@@ -20,6 +20,24 @@ cargo run --example interactive_candles
 - R = Restart
 - \<Esc> = Exit
 
+## Grafico a barre interattivo
+
+Eseguibile tramite il seguente comando
+
+```rust
+cargo run --example interactive_barchart
+```
+
+### Instructions:
+
+- ←/→ = Previous/next series
+- +/- = Adjust sample rate
+- 1/2 = Adjust start index
+- 9/0 = Adjust end index
+- P = Start/Stop
+- R = Restart
+- \<Esc> = Exit
+
 ## Base plot
 
 Per eseguire tutti i grafici

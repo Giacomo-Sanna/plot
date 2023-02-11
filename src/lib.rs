@@ -3,6 +3,8 @@ pub mod candles;
 pub mod liquidity_plot;
 pub mod helpers;
 pub mod interactive_candles;
+pub mod interactive_chart;
+pub mod interactive_barchart;
 
 #[cfg(test)]
 mod tests {
