@@ -9,7 +9,7 @@ pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     plot(v, captions, root, None, None,
          (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
-    println!("Liquidity chart has been saved to {}", &filepath);
+    println!("Bar chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,

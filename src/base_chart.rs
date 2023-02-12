@@ -5,11 +5,11 @@ use crate::helpers;
 pub fn plot_single_series_image(v: Vec<f32>, file_name: &str, caption: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, caption, root).expect("ERROR: Unable to plot image!");
+    plot_single_series(v, caption, root).expect("ERROR: Unable to plot image!");
     println!("Single series chart has been saved to {}", &filepath);
 }
 
-pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<f32>, caption: &str, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
+pub fn plot_single_series<'a, DB: DrawingBackend + 'a>(v: Vec<f32>, caption: &str, backend: DB) -> Result<(), Box<dyn Error + 'a>> {
     if v.is_empty() {
         return Err("ERROR: Vector is empty!".into());
     }

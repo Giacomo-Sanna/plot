@@ -1,10 +1,10 @@
-pub mod base_plot;
-pub mod candles;
-pub mod liquidity_plot;
+pub mod base_chart;
+pub mod candlestick_chart;
+pub mod bar_chart;
 pub mod helpers;
-pub mod interactive_candles;
+pub mod interactive_candlestick_chart;
 pub mod interactive_chart;
-pub mod interactive_barchart;
+pub mod interactive_bar_chart;
 
 #[cfg(test)]
 mod tests {
@@ -18,8 +18,9 @@ mod tests {
 
     #[test]
     fn test_base_plot() {
+        println!("candlestick-chart");
         let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        base_plot::plot_single_series_image(v, "test_base_plot", "base plot");
+        base_chart::plot_single_series_image(v, "test_base_chart", "Base chart");
     }
 
     #[test]
@@ -30,14 +31,14 @@ mod tests {
             v.push((i..(len + i)).map(f32::from).collect());
         }
 
-        base_plot::plot_multiple_series_image(v, "test_base_plot_multiple_series", "Liquidità");
+        base_chart::plot_multiple_series_image(v, "test_base_chart_multiple_series", "Chart with multiple series");
     }
 
     #[test]
     fn test_plot_candles() {
         // let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
         let v = helpers::generate_data_series(100., 1000, -0.0985, 0.1);
-        candles::plot_image(v, 10, "test_plot_candles", "Candles");
+        candlestick_chart::plot_image(v, 10, "test_candlestick_chart", "Candlestick chart");
     }
 
     #[test]
@@ -50,6 +51,6 @@ mod tests {
 
         let captions: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i + 1)).collect();
 
-        liquidity_plot::plot_image(vec![&v[0], &v[1], &v[2], &v[3]], captions, "test_plot_liquidity");
+        bar_chart::plot_image(vec![&v[0], &v[1], &v[2], &v[3]], captions, "test_bar_chart");
     }
 }

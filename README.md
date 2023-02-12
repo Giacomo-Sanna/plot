@@ -2,11 +2,11 @@
 
 ## Grafico a candele interattivo
 
-![gif architettura](./images/candles.gif)
+![gif architettura](./images/candlestick_chart.gif)
 Eseguibile tramite il seguente comando
 
 ```rust
-cargo run --example interactive_candles 
+cargo run --example interactive_candlestick_chart 
 ```
 
 ### Instructions:
@@ -25,7 +25,7 @@ cargo run --example interactive_candles
 Eseguibile tramite il seguente comando
 
 ```rust
-cargo run --example interactive_barchart
+cargo run --example interactive_bar_chart
 ```
 
 ### Instructions:
@@ -49,27 +49,23 @@ cargo test
 ### una serie
 
 ```rust
-use plot_graph::base_plot;
-base_plot::plot_single_series_image(vec![1., 3.], "file_name", "caption");
+base_chart::plot_single_series_image(vec![1., 3.], "file_name", "caption");
 ```
 
-### più serie
+### Base chart multiple series
 
 ```rust
-use plot_graph::base_plot;
-base_plot::plot_multiple_series_image(vec![vec![..], vec![..], ..], "file_name", "caption");
+base_chart::plot_multiple_series_image(vec![vec![..], vec![..], ..], "file_name", "caption");
 ```
 
 ## Candlestick chart
 
 ```rust
-use candles::plot;
-candles::plot_image(vec![..], < candle_size >, "file_name", "caption");
+candlestick_chart::plot_image(vec![..], < candle_size >, "file_name", "caption");
 ```
 
-## Bar chart (liquidity chart)
+## Bar chart
 
 ```rust
-use liquidity_chart::plot;
-liquidity_plot::plot_image(vec![vec![..], ..], vec![<market_names>], "file_name");
+bar_chart::plot_image(vec![..], vec![<captions>], "file_name");
 ```

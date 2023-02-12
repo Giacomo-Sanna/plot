@@ -5,7 +5,7 @@ use plotters::chart::ChartState;
 use plotters::coord::types::{RangedCoordf32, RangedCoordi32};
 use crate::helpers;
 use crate::helpers::interactive_chart::*;
-use crate::candles;
+use crate::candlestick_chart;
 use plotters::backend::BGRXPixel;
 
 
@@ -26,7 +26,7 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
 
     let custom_candle_start_index: usize = start_index;
 
-    let candles_data = candles::parse_data(&v, candle_size, Some(custom_candle_start_index + 1));
+    let candles_data = candlestick_chart::parse_data(&v, candle_size, Some(custom_candle_start_index + 1));
     let (start_date, end_date) = (
         (custom_candle_start_index as i32 - candle_size as i32),
         (candles_data[candles_data.len() - 1].0 as i32 + candle_size as i32),
@@ -73,8 +73,8 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candl
 
     let custom_candle_start_index: usize = start_index;
 
-    let data = candles::parse_data(&v[..curr_index], candle_size, Some(custom_candle_start_index + 1));
-    let n_elements = candles::parse_data(&v, candle_size, None).len();
+    let data = candlestick_chart::parse_data(&v[..curr_index], candle_size, Some(custom_candle_start_index + 1));
+    let n_elements = candlestick_chart::parse_data(&v, candle_size, None).len();
 
     chart
         .draw_series(data.iter().filter(|x| x.1 != x.4)
@@ -85,8 +85,8 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candl
                 x.2,
                 x.3,
                 x.4,
-                candles::GREEN.filled(),
-                candles::RED.filled(),
+                candlestick_chart::GREEN.filled(),
+                candlestick_chart::RED.filled(),
                 ((W as u32 - MARGIN - LABEL) as f32 / (n_elements as f32 + 2.)).floor() as u32,
             )
         }))?;
@@ -98,8 +98,8 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candl
                 x.2,
                 x.3,
                 x.4,
-                candles::GREEN,
-                candles::RED,
+                candlestick_chart::GREEN,
+                candlestick_chart::RED,
                 ((W as u32 - MARGIN - LABEL) as f32 / (n_elements as f32 + 2.)).floor() as u32,
             )
         }))?;

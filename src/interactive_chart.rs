@@ -6,8 +6,8 @@ use std::time::SystemTime;
 use plotters::chart::ChartState;
 use plotters::coord::types::{RangedCoordf32, RangedCoordi32};
 use crate::helpers;
-use crate::interactive_candles;
-use crate::interactive_barchart;
+use crate::interactive_candlestick_chart;
+use crate::interactive_bar_chart;
 use crate::helpers::interactive_chart::*;
 
 pub enum ChartType {
@@ -24,11 +24,11 @@ fn initialize_buff_chart(chart_type: &ChartType, buf: &mut helpers::BufferWrappe
     -> Result<ChartStateWrapper, Box<dyn Error>> {
     match chart_type {
         ChartType::Candlestick => {
-            let rtn = interactive_candles::initialize_buff_chart(buf, v, candle_size, start_index)?;
+            let rtn = interactive_candlestick_chart::initialize_buff_chart(buf, v, candle_size, start_index)?;
             Ok(ChartStateWrapper::Candlestick(rtn))
         }
         ChartType::Bar => {
-            let rtn = interactive_barchart::initialize_buff_chart(buf, v, start_index)?;
+            let rtn = interactive_bar_chart::initialize_buff_chart(buf, v, start_index)?;
             Ok(ChartStateWrapper::Bar(rtn))
         }
     }
@@ -38,11 +38,11 @@ fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usi
                    cs: &ChartStateWrapper) -> Result<(), Box<dyn Error>> {
     match cs {
         ChartStateWrapper::Candlestick(cs) => {
-            interactive_candles::draw_buff_chart(buf, v, candle_size, curr_index, start_index, cs)?;
+            interactive_candlestick_chart::draw_buff_chart(buf, v, candle_size, curr_index, start_index, cs)?;
             Ok(())
         }
         ChartStateWrapper::Bar(cs) => {
-            interactive_barchart::draw_buff_chart(buf, v, curr_index, start_index, cs, None)?;
+            interactive_bar_chart::draw_buff_chart(buf, v, curr_index, start_index, cs, None)?;
             Ok(())
         }
     }
@@ -50,8 +50,8 @@ fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usi
 
 fn get_window_title(chart_type: &ChartType, v_name: &str, paused: bool, candle_size: usize, sr: f64, start_index: usize, end_index: usize) -> String {
     match chart_type {
-        ChartType::Candlestick => { interactive_candles::get_window_title(v_name, paused, candle_size, sr, start_index, end_index)}
-        ChartType::Bar => { interactive_barchart::get_window_title(v_name, paused, sr, start_index, end_index)}
+        ChartType::Candlestick => { interactive_candlestick_chart::get_window_title(v_name, paused, candle_size, sr, start_index, end_index)}
+        ChartType::Bar => { interactive_bar_chart::get_window_title(v_name, paused, sr, start_index, end_index)}
     }
 }
 
@@ -70,15 +70,17 @@ pub fn launch_gui_candlestick(vec: Vec<(&str, Vec<f32>)>, candle_size: Option<us
     launch_gui(ChartType::Candlestick, vec, candle_size)
 }
 
+pub fn get_instructions(chart_type: ChartType) -> String {
+    match &chart_type {
+        ChartType::Candlestick => { interactive_candlestick_chart::INSTRUCTIONS.to_string()}
+        ChartType::Bar => { interactive_bar_chart::INSTRUCTIONS.to_string()}
+    }
+}
+
 fn launch_gui(chart_type: ChartType, vec: Vec<(&str, Vec<f32>)>, candle_size: Option<usize>) -> Result<(), Box<dyn Error>> {
     let mut v_index = 0;
     let mut v = &vec[v_index].1;
     let mut v_name = *&vec[v_index].0;
-
-    match &chart_type {
-        ChartType::Candlestick => { println!("{}", interactive_candles::INSTRUCTIONS);}
-        ChartType::Bar => { println!("{}", interactive_barchart::INSTRUCTIONS);}
-    }
 
     let mut buf = helpers::BufferWrapper::new(W, H);
     let mut candle_size = match candle_size {
