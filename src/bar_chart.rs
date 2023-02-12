@@ -1,3 +1,4 @@
+use std::cmp::min;
 use plotters::coord::Shift;
 use plotters::prelude::*;
 use std::error::Error;
@@ -6,14 +7,14 @@ use crate::helpers;
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, captions, root, None, None, None,
+    plot(v, captions, root, None, None, None, None,
          (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
     println!("Bar chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,
-                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>,
+                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>, x_max_labels: Option<usize>,
                                          label_area_size: (u32, u32), margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
@@ -33,13 +34,13 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
     };
 
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, bar_margin, label_area_size, margin, font)?;
+        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, bar_margin, x_max_labels, label_area_size, margin, font)?;
     }
     Ok(())
 }
 
 pub(crate) fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
-                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>,
+                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>, x_max_labels: Option<usize>,
                                              label_area_size: (u32, u32), margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
@@ -61,7 +62,15 @@ pub(crate) fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Sh
         .y_label_area_size(label_area_size.1)
         .build_cartesian_2d((x_start)..(x_end), (y_start)..(y_end))?;
 
-    chart.configure_mesh().draw()?;
+    let x_max_labels = match x_max_labels {
+        None => {11}
+        Some(v) => {v}
+    };
+
+    chart.configure_mesh()
+        .x_labels(min(v.len(), x_max_labels))
+        .x_label_formatter(&|x| format!("{}", *x as usize))
+        .draw()?;
 
     let gradient = colorous::COOL;
     let n = v.len();

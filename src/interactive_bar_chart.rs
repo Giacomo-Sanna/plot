@@ -1,4 +1,5 @@
 use std::borrow::{BorrowMut};
+use std::cmp::min;
 use plotters::prelude::*;
 use std::error::Error;
 use plotters::chart::ChartState;
@@ -38,7 +39,10 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
             .y_label_area_size(LABEL)
             .build_cartesian_2d((x_start)..(x_end), (y_start)..(y_end))?;
 
-        chart.configure_mesh().draw()?;
+        chart.configure_mesh()
+            .x_labels(min(v.len(), 11))
+            .x_label_formatter(&|x| format!("{}", *x as usize))
+            .draw()?;
 
         let cs = chart.into_chart_state();
         root.present()?;
@@ -59,6 +63,8 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_
 
         chart
             .configure_mesh()
+            .x_labels(min(v.len(), 11))
+            .x_label_formatter(&|x| format!("{}", *x as usize))
             .draw()?;
 
         let x_start_index = start_index;
