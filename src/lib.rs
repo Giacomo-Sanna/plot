@@ -17,14 +17,13 @@ mod tests {
     }
 
     #[test]
-    fn test_base_plot() {
-        println!("candlestick-chart");
+    fn test_base_chart_single_series() {
         let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
-        base_chart::plot_single_series_image(v, "test_base_chart", "Base chart");
+        base_chart::plot_single_series_image(v, "test_base_chart_single_series", "Base chart");
     }
 
     #[test]
-    fn test_base_plot_multiple_series() {
+    fn test_base_chart_multiple_series() {
         let len: u16 = 10;
         let mut v = vec![];
         for i in 1..len {
@@ -35,14 +34,20 @@ mod tests {
     }
 
     #[test]
-    fn test_plot_candles() {
+    fn test_candlestick_chart() {
         // let v = vec![1.5, 4., 2., 5., 10., 12., 3.];
         let v = helpers::generate_data_series(100., 1000, -0.0985, 0.1);
         candlestick_chart::plot_image(v, 10, "test_candlestick_chart", "Candlestick chart");
     }
 
     #[test]
-    fn test_liquidity_plot() {
+    fn test_bar_chart() {
+        let v = helpers::generate_data_series(100., 1000, -0.0985, 0.1);
+        bar_chart::plot_image(vec![&v], vec!["Caption".to_string()], "test_bar_chart");
+    }
+
+    #[test]
+    fn test_bar_chart_multiple_series() {
         let v: Vec<Vec<f32>> = vec![
             vec![1., 2., 3., 4.],
             vec![7., 5., 3., 1.],
@@ -51,6 +56,6 @@ mod tests {
 
         let captions: Vec<String> = (0..v.len()).map(|i| format!("Market {}", i + 1)).collect();
 
-        bar_chart::plot_image(vec![&v[0], &v[1], &v[2], &v[3]], captions, "test_bar_chart");
+        bar_chart::plot_image(vec![&v[0], &v[1], &v[2], &v[3]], captions, "test_bar_chart_multiple_series");
     }
 }

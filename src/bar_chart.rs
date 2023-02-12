@@ -6,14 +6,14 @@ use crate::helpers;
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, captions, root, None, None,
+    plot(v, captions, root, None, None, None,
          (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
     println!("Bar chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,
-                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>,
+                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>,
                                          label_area_size: (u32, u32), margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
@@ -33,7 +33,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
     };
 
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, None, label_area_size, margin, font)?;
+        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, bar_margin, label_area_size, margin, font)?;
     }
     Ok(())
 }
