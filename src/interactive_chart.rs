@@ -42,7 +42,7 @@ fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usi
             Ok(())
         }
         ChartStateWrapper::Bar(cs) => {
-            interactive_barchart::draw_buff_chart(buf, v, curr_index, start_index, cs)?;
+            interactive_barchart::draw_buff_chart(buf, v, curr_index, start_index, cs, None)?;
             Ok(())
         }
     }

@@ -47,7 +47,7 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
     Ok(cs)
 }
 
-pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>) -> Result<(), Box<dyn Error>> {
+pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>, bar_margin: Option<u32>) -> Result<(), Box<dyn Error>> {
     let root = BitMapBackend::<BGRXPixel>::with_buffer_and_format(
         buf.borrow_mut(),
         (W as u32, H as u32),
@@ -64,6 +64,10 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_
         let x_start_index = start_index;
 
         let gradient = colorous::COOL;
+        let bar_margin = match bar_margin {
+            Some(m) => m,
+            None => 2,
+        };
         let n = v.len();
 
         chart.draw_series(v[..curr_index].iter().enumerate().map(|(x, y)| {
@@ -71,7 +75,7 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_
             let mut bar = Rectangle::new(
                 [((x + x_start_index) as f32, 0.), ((x + x_start_index) as f32 + 1., *y)],
                 RGBColor(color.r, color.g, color.b).filled());
-            bar.set_margin(0, 0, 1, 1);
+            bar.set_margin(0, 0, bar_margin, bar_margin);
             bar
         }))?;
     }

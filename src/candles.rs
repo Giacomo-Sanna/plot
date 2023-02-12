@@ -10,12 +10,14 @@ pub(crate) const RED: RGBColor = RGBColor(209, 61, 61);
 pub fn plot_image(v: Vec<f32>, candle_size: usize, file_name: &str, caption: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(&v, candle_size, caption, root, helpers::graph::LABEL_AREA_SIZE, helpers::graph::MARGIN, helpers::graph::WIDTH, helpers::graph::DEFAULT_FONT, None, None).expect("ERROR: Unable to plot image!");
+    plot(&v, candle_size, caption, root,
+         (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::WIDTH, helpers::graph::DEFAULT_FONT,
+         None, None).expect("ERROR: Unable to plot image!");
     println!("Candlestick chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption: &str, backend: DB,
-                                         label_area_size: u32, margin: u32, width: u32, font: (&str, u32),
+                                         label_area_size: (u32, u32), margin: u32, width: u32, font: (&str, u32),
                                          custom_candle_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>)
     -> Result<(), Box<dyn Error + 'a>> {
     if v.is_empty() {
@@ -38,8 +40,8 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
 
     // Basic chart configuration
     let mut chart = ChartBuilder::on(&root)
-        .x_label_area_size(label_area_size)
-        .y_label_area_size(label_area_size)
+        .x_label_area_size(label_area_size.0)
+        .y_label_area_size(label_area_size.1)
         .margin(margin)
         .caption(
             caption,
@@ -63,7 +65,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
                 x.4,
                 GREEN.filled(),
                 RED.filled(),
-                ((width - label_area_size) as f32
+                ((width - label_area_size.0) as f32
                     / (data.len() as f32 + 2.)).floor() as u32,
             )
         }))?;
@@ -78,7 +80,7 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: &[f32], candle_size: usize, caption:
                     x.4,
                     GREEN,
                     RED,
-                    ((width - label_area_size) as f32
+                    ((width - label_area_size.0) as f32
                         / (data.len() as f32 + 2.)).floor() as u32,
                 )
             }))?;
