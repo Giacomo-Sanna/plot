@@ -20,15 +20,15 @@ pub enum ChartStateWrapper {
     Candlestick(ChartState<Cartesian2d<RangedCoordi32, RangedCoordf32>>),
 }
 
-fn initialize_buff_chart(chart_type: &ChartType, buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize)
+fn initialize_buff_chart(chart_type: &ChartType, buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize, caption: &str)
     -> Result<ChartStateWrapper, Box<dyn Error>> {
     match chart_type {
         ChartType::Candlestick => {
-            let rtn = interactive_candlestick_chart::initialize_buff_chart(buf, v, candle_size, start_index)?;
+            let rtn = interactive_candlestick_chart::initialize_buff_chart(buf, v, candle_size, start_index, caption)?;
             Ok(ChartStateWrapper::Candlestick(rtn))
         }
         ChartType::Bar => {
-            let rtn = interactive_bar_chart::initialize_buff_chart(buf, v, start_index)?;
+            let rtn = interactive_bar_chart::initialize_buff_chart(buf, v, start_index, caption)?;
             Ok(ChartStateWrapper::Bar(rtn))
         }
     }
@@ -42,16 +42,16 @@ fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usi
             Ok(())
         }
         ChartStateWrapper::Bar(cs) => {
-            interactive_bar_chart::draw_buff_chart(buf, v, curr_index, start_index, cs, None)?;
+            interactive_bar_chart::draw_buff_chart(buf, v, curr_index, start_index, cs)?;
             Ok(())
         }
     }
 }
 
-fn get_window_title(chart_type: &ChartType, v_name: &str, paused: bool, candle_size: usize, sr: f64, start_index: usize, end_index: usize) -> String {
+fn get_window_title(chart_type: &ChartType, paused: bool, candle_size: usize, sr: f64, start_index: usize, end_index: usize) -> String {
     match chart_type {
-        ChartType::Candlestick => { interactive_candlestick_chart::get_window_title(v_name, paused, candle_size, sr, start_index, end_index)}
-        ChartType::Bar => { interactive_bar_chart::get_window_title(v_name, paused, sr, start_index, end_index)}
+        ChartType::Candlestick => { interactive_candlestick_chart::get_window_title(paused, candle_size, sr, start_index, end_index)}
+        ChartType::Bar => { interactive_bar_chart::get_window_title(paused, sr, start_index, end_index)}
     }
 }
 
@@ -93,7 +93,7 @@ fn launch_gui(chart_type: ChartType, vec: Vec<(&str, Vec<f32>)>, candle_size: Op
     let mut end_index = v.len();
 
     let mut window = Window::new(
-        &get_window_title(&chart_type, v_name, paused, candle_size, sample_rate, start_index, end_index),
+        &get_window_title(&chart_type, paused, candle_size, sample_rate, start_index, end_index),
         W,
         H,
         WindowOptions::default(),
@@ -102,7 +102,7 @@ fn launch_gui(chart_type: ChartType, vec: Vec<(&str, Vec<f32>)>, candle_size: Op
     // Limit to max ~60 fps update rate
     window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
 
-    let mut cs = initialize_buff_chart(&chart_type, &mut buf, &v, candle_size, start_index)?;
+    let mut cs = initialize_buff_chart(&chart_type, &mut buf, &v, candle_size, start_index, v_name)?;
 
     let mut chart_reloading_required = false;
     let mut chart_initialization_required = false;
@@ -130,7 +130,7 @@ fn launch_gui(chart_type: ChartType, vec: Vec<(&str, Vec<f32>)>, candle_size: Op
             && curr_index > start_index {
 
             if chart_initialization_required {
-                cs = initialize_buff_chart(&chart_type, &mut buf, &v[start_index..end_index], candle_size, start_index)?;
+                cs = initialize_buff_chart(&chart_type, &mut buf, &v[start_index..end_index], candle_size, start_index, v_name)?;
                 chart_initialization_required = false;
             }
 
@@ -266,7 +266,7 @@ fn launch_gui(chart_type: ChartType, vec: Vec<(&str, Vec<f32>)>, candle_size: Op
                     continue;
                 }
             }
-            window.set_title(&get_window_title(&chart_type, v_name, paused, candle_size, sample_rate, start_index, end_index));
+            window.set_title(&get_window_title(&chart_type, paused, candle_size, sample_rate, start_index, end_index));
         }
         window.update_with_buffer(buf.borrow(), W, H)?;
     }

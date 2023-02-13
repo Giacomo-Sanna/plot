@@ -14,9 +14,10 @@ pub mod graph {
 pub mod interactive_chart {
     pub const W: usize = 800;
     pub const H: usize = 600;
-    pub const MARGIN: u32 = 10;
+    pub const MARGIN: u32 = 20;
     pub const LABEL: u32 = 50;
     pub const SAMPLE_RATE: f64 = 60.0;
+    pub const DEFAULT_FONT: (&str, u32) = ("sans-serif", 40);
 }
 
 pub fn f32_max(v: &[f32]) -> f32 {

@@ -7,14 +7,14 @@ use crate::helpers;
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
     let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
-    plot(v, captions, root, None, None, None, None,
+    plot(v, captions, root, None, None, None,
          (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
     println!("Bar chart has been saved to {}", &filepath);
 }
 
 pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, backend: DB,
-                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>, x_max_labels: Option<usize>,
+                                         custom_x_start_index: Option<usize>, custom_y_range: Option<(f32, f32)>, x_max_labels: Option<usize>,
                                          label_area_size: (u32, u32), margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     let contains_empty = v.iter().fold(false, |prev, v| prev || v.is_empty());
     if v.is_empty() || contains_empty {
@@ -34,13 +34,13 @@ pub fn plot<'a, DB: DrawingBackend + 'a>(v: Vec<&[f32]>, captions: Vec<String>, 
     };
 
     for (area, i) in child_drawing_areas.into_iter().zip(0..) {
-        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, bar_margin, x_max_labels, label_area_size, margin, font)?;
+        plot_subplot(area, &v[i], &captions[i], x_start_index, custom_y_range, x_max_labels, label_area_size, margin, font)?;
     }
     Ok(())
 }
 
 pub(crate) fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Shift>, v: &[f32], caption: &String,
-                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>, bar_margin: Option<u32>, x_max_labels: Option<usize>,
+                                             x_start_index: usize, custom_y_range: Option<(f32, f32)>, x_max_labels: Option<usize>,
                                              label_area_size: (u32, u32), margin: u32, font: (&str, u32)) -> Result<(), Box<dyn Error + 'a>> {
     root.fill(&WHITE)?;
 
@@ -74,18 +74,12 @@ pub(crate) fn plot_subplot<'a, DB: DrawingBackend + 'a>(root: DrawingArea<DB, Sh
 
     let gradient = colorous::COOL;
     let n = v.len();
-    let bar_margin = match bar_margin {
-        Some(m) => m,
-        None => 2,
-    };
 
     chart.draw_series(v.iter().enumerate().map(|(x, y)| {
         let color = gradient.eval_rational(x, n);
-        let mut bar = Rectangle::new(
+        Rectangle::new(
             [((x + x_start_index) as f32, 0.), ((x + x_start_index) as f32 + 1., *y)],
-            RGBColor(color.r, color.g, color.b).filled());
-        bar.set_margin(0, 0, bar_margin, bar_margin);
-        bar
+            RGBColor(color.r, color.g, color.b).filled())
     }))?;
 
     Ok(())

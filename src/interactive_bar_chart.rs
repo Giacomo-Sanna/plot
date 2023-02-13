@@ -18,7 +18,7 @@ pub const INSTRUCTIONS: &str = "Instructions:
   <Esc>=Exit
 ";
 
-pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], x_start_index: usize) -> Result<ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>, Box<dyn Error>> {
+pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], x_start_index: usize, caption: &str) -> Result<ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>, Box<dyn Error>> {
     let cs = {
         let root =
             BitMapBackend::<BGRXPixel>::with_buffer_and_format(buf.borrow_mut(), (W as u32, H as u32))?
@@ -33,7 +33,7 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
         let (y_start, y_end) = (0., el_max * 1.05);
 
         let mut chart = ChartBuilder::on(&root)
-            // .caption(caption, font.into_font())
+            .caption(caption, DEFAULT_FONT.into_font())
             .margin(MARGIN)
             .x_label_area_size(LABEL)
             .y_label_area_size(LABEL)
@@ -51,7 +51,7 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
     Ok(cs)
 }
 
-pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>, bar_margin: Option<u32>) -> Result<(), Box<dyn Error>> {
+pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_index: usize, start_index: usize, cs: &ChartState<Cartesian2d<RangedCoordf32, RangedCoordf32>>) -> Result<(), Box<dyn Error>> {
     let root = BitMapBackend::<BGRXPixel>::with_buffer_and_format(
         buf.borrow_mut(),
         (W as u32, H as u32),
@@ -70,29 +70,23 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], curr_
         let x_start_index = start_index;
 
         let gradient = colorous::COOL;
-        let bar_margin = match bar_margin {
-            Some(m) => m,
-            None => 2,
-        };
         let n = v.len();
 
         chart.draw_series(v[..curr_index].iter().enumerate().map(|(x, y)| {
             let color = gradient.eval_rational(x, n);
-            let mut bar = Rectangle::new(
+            Rectangle::new(
                 [((x + x_start_index) as f32, 0.), ((x + x_start_index) as f32 + 1., *y)],
-                RGBColor(color.r, color.g, color.b).filled());
-            bar.set_margin(0, 0, bar_margin, bar_margin);
-            bar
+                RGBColor(color.r, color.g, color.b).filled())
         }))?;
     }
     root.present()?;
     Ok(())
 }
 
-pub(crate) fn get_window_title(v_name: &str, paused: bool, sr: f64, start_index: usize, end_index: usize) -> String {
+pub(crate) fn get_window_title(paused: bool, sr: f64, start_index: usize, end_index: usize) -> String {
     let paused_text = if paused { "PAUSED, " } else { "" };
     format!(
-        "{} {}, sample rate = {:.1}, start index = {}, end index = {}",
-        paused_text, v_name, sr, start_index, end_index
+        "{}sample rate = {:.1}, start index = {}, end index = {}",
+        paused_text, sr, start_index, end_index
     )
 }

@@ -20,7 +20,7 @@ pub const INSTRUCTIONS: &str = "Instructions:
   <Esc>=Exit
 ";
 
-pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize) -> Result<ChartState<Cartesian2d<RangedCoordi32, RangedCoordf32>>, Box<dyn Error>> {
+pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candle_size: usize, start_index: usize, caption: &str) -> Result<ChartState<Cartesian2d<RangedCoordi32, RangedCoordf32>>, Box<dyn Error>> {
     let el_max = helpers::f32_max(&v);
     let el_min = helpers::f32_min(&v);
 
@@ -40,6 +40,7 @@ pub(crate) fn initialize_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32],
         root.fill(&WHITE)?;
 
         let mut chart = ChartBuilder::on(&root)
+            .caption(caption, DEFAULT_FONT.into_font())
             .margin(MARGIN)
             .x_label_area_size(LABEL)
             .y_label_area_size(LABEL)
@@ -108,10 +109,10 @@ pub(crate) fn draw_buff_chart(buf: &mut helpers::BufferWrapper, v: &[f32], candl
     Ok(())
 }
 
-pub(crate) fn get_window_title(v_name: &str, paused: bool, candle_size: usize, sr: f64, start_index: usize, end_index: usize) -> String {
+pub(crate) fn get_window_title(paused: bool, candle_size: usize, sr: f64, start_index: usize, end_index: usize) -> String {
     let paused_text = if paused { "PAUSED, " } else { "" };
     format!(
-        "{} {}, candle size = {}, sample rate = {:.1}, start index = {}, end index = {}",
-        paused_text, v_name, candle_size, sr, start_index, end_index
+        "{}candle size = {}, sample rate = {:.1}, start index = {}, end index = {}",
+        paused_text, candle_size, sr, start_index, end_index
     )
 }
