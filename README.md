@@ -1,5 +1,3 @@
-[TOC]
-
 # Plot
 
 This library is part of the Advanced Programming course project of the University of Trento.
