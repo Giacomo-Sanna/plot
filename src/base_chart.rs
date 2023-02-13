@@ -4,7 +4,7 @@ use crate::helpers;
 
 pub fn plot_single_series_image(v: Vec<f32>, file_name: &str, caption: &str) {
     let filepath = helpers::get_file_path(file_name);
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    let root = BitMapBackend::new(&filepath, (helpers::chart::WIDTH, helpers::chart::HEIGHT));
     plot_single_series(v, caption, root).expect("ERROR: Unable to plot image!");
     println!("Single series chart has been saved to {}", &filepath);
 }
@@ -22,10 +22,10 @@ pub fn plot_single_series<'a, DB: DrawingBackend + 'a>(v: Vec<f32>, caption: &st
 
     let mut chart = ChartBuilder::on(&root)
         .caption(caption,
-                 helpers::graph::DEFAULT_FONT.into_font())
+                 helpers::chart::DEFAULT_FONT.into_font())
         .margin(5)
-        .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
+        .x_label_area_size(helpers::chart::LABEL_AREA_SIZE)
+        .y_label_area_size(helpers::chart::LABEL_AREA_SIZE)
         .build_cartesian_2d(0..(v.len() - 1), (el_min * 0.9)..(el_max * 1.1))?;
 
     chart.configure_mesh().draw()?;
@@ -43,7 +43,7 @@ pub fn plot_single_series<'a, DB: DrawingBackend + 'a>(v: Vec<f32>, caption: &st
 
 pub fn plot_multiple_series_image(vec: Vec<Vec<f32>>, file_name: &str, caption: &str) {
     let filepath = helpers::get_file_path(file_name);
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    let root = BitMapBackend::new(&filepath, (helpers::chart::WIDTH, helpers::chart::HEIGHT));
     plot_multiple_series(vec, caption, root).expect("ERROR: Unable to plot image!");
     println!("Multiple series chart has been saved to {}", &filepath);
 }
@@ -68,10 +68,10 @@ pub fn plot_multiple_series<'a, DB: DrawingBackend + 'a>(vec: Vec<Vec<f32>>, cap
 
     let mut chart = ChartBuilder::on(&root)
         .caption(caption,
-                 helpers::graph::DEFAULT_FONT.into_font())
+                 helpers::chart::DEFAULT_FONT.into_font())
         .margin(5)
-        .x_label_area_size(helpers::graph::LABEL_AREA_SIZE)
-        .y_label_area_size(helpers::graph::LABEL_AREA_SIZE)
+        .x_label_area_size(helpers::chart::LABEL_AREA_SIZE)
+        .y_label_area_size(helpers::chart::LABEL_AREA_SIZE)
         .build_cartesian_2d(0..(max_len - 1), (el_min * 0.9)..(el_max * 1.1))?;
 
     chart.configure_mesh().draw()?;

@@ -6,9 +6,9 @@ use crate::helpers;
 
 pub fn plot_image(v: Vec<&[f32]>, captions: Vec<String>, file_name: &str) {
     let filepath = helpers::get_file_path(file_name);
-    let root = BitMapBackend::new(&filepath, (helpers::graph::WIDTH, helpers::graph::HEIGHT));
+    let root = BitMapBackend::new(&filepath, (helpers::chart::WIDTH, helpers::chart::HEIGHT));
     plot(v, captions, root, None, None, None,
-         (helpers::graph::LABEL_AREA_SIZE, helpers::graph::LABEL_AREA_SIZE), helpers::graph::MARGIN, helpers::graph::DEFAULT_FONT)
+         (helpers::chart::LABEL_AREA_SIZE, helpers::chart::LABEL_AREA_SIZE), helpers::chart::MARGIN, helpers::chart::DEFAULT_FONT)
         .expect("ERROR: Unable to plot image!");
     println!("Bar chart has been saved to {}", &filepath);
 }

@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn create_dir() {
         use std::fs;
-        fs::create_dir_all(format!("./{}", helpers::graph::DEFAULT_DIR)).expect("ERROR: Unable to create images' directory!");
+        fs::create_dir_all(format!("./{}", helpers::chart::DEFAULT_DIR)).expect("ERROR: Unable to create images' directory!");
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use rand::Rng;
 use std::borrow::{Borrow, BorrowMut};
 
-pub mod graph {
+pub mod chart {
     pub const WIDTH: u32 = 1280;
     pub const HEIGHT: u32 = 960;
     pub const LABEL_AREA_SIZE: u32 = 60;
@@ -29,7 +29,7 @@ pub fn f32_min(v: &[f32]) -> f32 {
 }
 
 pub fn get_file_path<'a>(file_name: &str) -> String {
-    format!("{}/{}.png", graph::DEFAULT_DIR, file_name)
+    format!("{}/{}.png", chart::DEFAULT_DIR, file_name)
 }
 
 pub fn generate_data_series(start_value: f32, len: usize, min_change: f32, max_change: f32) -> Vec<f32> {
